@@ -8,6 +8,9 @@ func (ui *ui) posSpace(p int) bool { return isSpace(ui.lines[ui.cy][p]) }
 
 func (ui *ui) ins(ch rune) {
 	if !ui.trySeqCont(ch) {
+		if isIndentEnd(ch) && ui.prev() == '\t' {
+			fBackspace(ui)
+		}
 		ui.lines[ui.cy] = append(ui.lines[ui.cy][:ui.cx], append([]rune{ch}, ui.lines[ui.cy][ui.cx:]...)...)
 		ui.cx++
 	}
@@ -52,13 +55,23 @@ func fHome(ui *ui) {
 
 func fEnter(ui *ui) {
 	nl := []rune{}
+	for _, ch := range ui.lines[ui.cy] {
+		if ch != '\t' {
+			break
+		}
+		nl = append(nl, ch)
+	}
+	if isIndentBeg(ui.prev()) {
+		nl = append(nl, '\t')
+	}
+	nx := len(nl)
 	if !ui.curRuneLast() {
 		nl = append(nl, ui.lines[ui.cy][ui.cx:]...)
 		ui.lines[ui.cy] = ui.lines[ui.cy][:ui.cx]
 	}
 	ui.lines = append(ui.lines[:ui.cy+1], append([][]rune{nl}, ui.lines[ui.cy+1:]...)...)
 	ui.cy++
-	ui.cx = 0
+	ui.cx = nx
 }
 
 func delWord(ui *ui) {
@@ -162,8 +175,22 @@ func (ui *ui) cur() rune {
 	}
 	return ui.lines[ui.cy][ui.cx]
 }
+
+// character before cursor
+func (ui *ui) prev() rune {
+	if ui.cx == 0 {
+		return '\n'
+	}
+	return ui.lines[ui.cy][ui.cx-1]
+}
 func isSpace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
+}
+func isIndentBeg(ch rune) bool {
+	return ch == '{' || ch == '(' || ch == '[' || ch == ':'
+}
+func isIndentEnd(ch rune) bool {
+	return ch == '}' || ch == ')' || ch == ']'
 }
 func (ui *ui) isCurEnd() bool {
 	return ui.curRuneLast() && ui.curLineLast()
