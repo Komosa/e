@@ -12,6 +12,9 @@ func getInFile(arg1 string) (io.ReadCloser, error) {
 		return os.Stdin, nil
 	}
 	f, err := os.Open(arg1)
+	if os.IsNotExist(err) {
+		return os.Create(arg1)
+	}
 	return f, err
 }
 
