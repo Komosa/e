@@ -96,9 +96,12 @@ func delWord(ui *ui) {
 func delLine(ui *ui) {
 	ui.killbuf = ui.lines[ui.cy]
 	ui.cx = 0
-	ui.lines = append(ui.lines[:ui.cy], ui.lines[ui.cy+1:]...)
-	if len(ui.lines) == 0 {
+	if len(ui.lines) == 1 {
 		ui.lines = [][]rune{[]rune{}}
+	} else if ui.curLineLast() {
+		ui.lines[ui.cy] = []rune{}
+	} else {
+		ui.lines = append(ui.lines[:ui.cy], ui.lines[ui.cy+1:]...)
 	}
 }
 func undelLine(ui *ui) {
