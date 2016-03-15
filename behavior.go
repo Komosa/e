@@ -121,7 +121,9 @@ func undelLine(ui *ui) {
 	if ui.killbuf == nil {
 		return
 	}
-	ui.lines = append(ui.lines[:ui.cy], append([][]rune{ui.killbuf}, ui.lines[ui.cy:]...)...)
+	b := make([]rune, len(ui.killbuf))
+	copy(b, ui.killbuf)
+	ui.lines = append(ui.lines[:ui.cy], append([][]rune{b}, ui.lines[ui.cy:]...)...)
 	ui.cy++
 	ui.cx = 0
 }
