@@ -99,10 +99,13 @@ func delWord(ui *ui) {
 	for ui.cx+d+1 < n && !ui.posSpace(ui.cx+d+1) {
 		d++
 	}
-	if ui.cx > 0 && ui.cx+d+1 < len(ui.lines[ui.cy]) && ui.posSpace(ui.cx-1) && ui.posSpace(ui.cx+d+1) {
-		// remove also one of spaces
-		d++ // when there are multiple ones around
+	// delete also all but one space after word
+	after := 0
+	for ui.cx+d+1 < n && ui.posSpace(ui.cx+d+1) {
+		d++
+		after = 1
 	}
+	d -= after
 	ui.lines[ui.cy] = append(ui.lines[ui.cy][:ui.cx], ui.lines[ui.cy][ui.cx+d+1:]...)
 }
 
