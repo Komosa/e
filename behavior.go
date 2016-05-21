@@ -235,6 +235,11 @@ func defMap() map[key]func(*ui) {
 		key{key: termbox.KeyArrowRight}:   func(ui *ui) { ui.horizMove(1) },
 		key{key: termbox.KeyCtrlK}:        delLine,
 		key{key: termbox.KeyCtrlU}:        undelLine,
+		key{key: termbox.KeyCtrlO}: func(ui *ui) {
+			delLine(ui)
+			fEnter(ui)
+			ui.horizMove(-1)
+		},
 		key{key: termbox.KeyCtrlE}: func(ui *ui) {
 			ui.lines = [][]rune{[]rune{}}
 			ui.cx = 0
