@@ -55,8 +55,8 @@ func fHome(ui *ui) {
 
 func fEnter(ui *ui) {
 	nl := []rune{}
-	for _, ch := range ui.lines[ui.cy] {
-		if ch != '\t' {
+	for i, ch := range ui.lines[ui.cy] {
+		if i >= ui.cx || ch != '\t' {
 			break
 		}
 		nl = append(nl, ch)
