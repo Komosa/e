@@ -1,32 +1,42 @@
 package e
 
+import "strings"
+
 type Event struct {
 	Key uint16
 	Ch  rune
 }
 
 func Process(evs []Event) string {
-	var out []rune
+	var out string
 	var cur int
 
 	put := func(ch rune) {
-		out = append(out[:cur], append([]rune{ch}, out[cur:]...)...)
+		out = out[:cur] + string(ch) + out[cur:]
 		cur++
 	}
-	moveBackUntil := func(ch rune) int {
-		prev := cur
-		for cur > 0 && out[cur-1] != ch {
-			cur--
-		}
-		return prev
+	currLineNum := func() int {
+		return strings.Count(out[:cur], "\n")
 	}
-	moveFwdUntil := func(ch rune) int {
-		prev := cur
-		n := len(out)
-		for cur <= n && out[cur-1] != ch {
-			cur++
+	startOfLine := func(nth int) int {
+		if nth <= 0 {
+			return -1
 		}
-		return prev
+		for i, c := range out {
+			if c == '\n' {
+				nth--
+				if nth == 0 {
+					return i
+				}
+			}
+		}
+		return len(out) + nth
+	}
+	min := func(a, b int) int {
+		if a > b {
+			a = b
+		}
+		return a
 	}
 
 	for _, ev := range evs {
@@ -40,28 +50,26 @@ func Process(evs []Event) string {
 				cur--
 			}
 		case ev.Key == KeyArrowRight:
-			cur++
+			cur = min(cur+1, len(out))
+
 		case ev.Key == KeyArrowUp:
-			adv := moveBackUntil('\n') - cur
-			if cur == 0 {
+			cl := currLineNum()
+			if cl == 0 {
+				cur = 0
 				break
 			}
-			cur--
-			moveBackUntil('\n')
-			cur += adv
-		case ev.Key == KeyArrowDown:
-			adv := moveBackUntil('\n') - cur
-			cur++
-			moveFwdUntil('\n')
-			cur += adv
-		}
+			sl := startOfLine(cl)
+			cur += startOfLine(cl-1) - sl
+			cur = min(cur, sl)
 
-		if cur > len(out) {
-			cur = len(out)
+		case ev.Key == KeyArrowDown:
+			cl := currLineNum()
+			cur += startOfLine(cl+1) - startOfLine(cl)
+			cur = min(cur, len(out))
 		}
 	}
 
-	return string(out)
+	return out
 }
 
 const (
