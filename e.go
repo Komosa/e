@@ -32,11 +32,21 @@ func Process(evs []Event) string {
 		}
 		return len(out) + nth
 	}
-	min := func(a, b int) int {
-		if a > b {
-			a = b
+
+	goLineUp := func() {
+		cl := currLineNum()
+		if cl == 0 {
+			cur = 0
+			return
 		}
-		return a
+		sl := startOfLine(cl)
+		cur += startOfLine(cl-1) - sl
+		cur = min(cur, sl)
+	}
+	goLineDown := func() {
+		cl := currLineNum()
+		cur += startOfLine(cl+1) - startOfLine(cl)
+		cur = min(cur, len(out))
 	}
 
 	for _, ev := range evs {
@@ -51,25 +61,21 @@ func Process(evs []Event) string {
 			}
 		case ev.Key == KeyArrowRight:
 			cur = min(cur+1, len(out))
-
 		case ev.Key == KeyArrowUp:
-			cl := currLineNum()
-			if cl == 0 {
-				cur = 0
-				break
-			}
-			sl := startOfLine(cl)
-			cur += startOfLine(cl-1) - sl
-			cur = min(cur, sl)
-
+			goLineUp()
 		case ev.Key == KeyArrowDown:
-			cl := currLineNum()
-			cur += startOfLine(cl+1) - startOfLine(cl)
-			cur = min(cur, len(out))
+			goLineDown()
 		}
 	}
 
 	return out
+}
+
+func min(a, b int) int {
+	if a > b {
+		a = b
+	}
+	return a
 }
 
 const (
