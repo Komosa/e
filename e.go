@@ -70,40 +70,6 @@ func Process(evs []Event) string {
 		}
 	}
 
-	currLineNum := func() int {
-		return strings.Count(out[:cur], "\n")
-	}
-	startOfLine := func(nth int) int {
-		if nth <= 0 {
-			return -1
-		}
-		for i, c := range out {
-			if c == '\n' {
-				nth--
-				if nth == 0 {
-					return i
-				}
-			}
-		}
-		return len(out) + nth
-	}
-
-	goLineUp := func() {
-		cl := currLineNum()
-		if cl == 0 {
-			cur = 0
-			return
-		}
-		sl := startOfLine(cl)
-		cur += startOfLine(cl-1) - sl
-		cur = min(cur, sl)
-	}
-	goLineDown := func() {
-		cl := currLineNum()
-		cur += startOfLine(cl+1) - startOfLine(cl)
-		cur = min(cur, len(out))
-	}
-
 	return out
 }
 
