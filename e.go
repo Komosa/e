@@ -11,10 +11,65 @@ func Process(evs []Event) string {
 	var out string
 	var cur int
 
+	var prev_was_updown bool    // was prev key up or down arrow?
+	var pref_col, pref_line int // preffered cur pos after sequence of up and down arrows
+
+	// insert next key as out[cur]; cur++
 	put := func(ch rune) {
 		out = out[:cur] + string(ch) + out[cur:]
 		cur++
 	}
+
+	for _, ev := range evs {
+		if ev.Key == KeyArrowUp || ev.Key == KeyArrowDown {
+			if !prev_was_updown {
+				pref_line = strings.Count(out[:cur], "\n")
+				line_beg := 1 + strings.LastIndex(out[:cur], "\n")
+				pref_col = cur - line_beg
+			}
+
+			if ev.Key == KeyArrowUp {
+				pref_line--
+			} else {
+				pref_line++
+			}
+			prev_was_updown = true
+		} else {
+			if prev_was_updown {
+				prev_was_updown = false
+				cur = 0
+
+				// go to pref line
+				for p := 0; p < pref_line; p++ {
+					jump := strings.Index(out[cur:], "\n") + 1
+					if jump == 0 {
+						cur = len(out)
+						break
+					}
+					cur += jump
+				}
+
+				// go to pref col
+				if pref_line >= 0 {
+					for p := 0; cur < len(out) && p < pref_col && out[cur] != '\n'; p++ {
+						cur++
+					}
+				}
+			}
+
+			switch {
+			case ev.Ch != 0:
+				put(ev.Ch)
+			case ev.Key == KeyEnter:
+				put('\n')
+			case ev.Key == KeyArrowLeft:
+				cur = max(cur-1, 0)
+			case ev.Key == KeyArrowRight:
+				cur = min(cur+1, len(out))
+			}
+		}
+	}
+
 	currLineNum := func() int {
 		return strings.Count(out[:cur], "\n")
 	}
@@ -49,30 +104,17 @@ func Process(evs []Event) string {
 		cur = min(cur, len(out))
 	}
 
-	for _, ev := range evs {
-		switch {
-		case ev.Ch != 0:
-			put(ev.Ch)
-		case ev.Key == KeyEnter:
-			put('\n')
-		case ev.Key == KeyArrowLeft:
-			if cur != 0 {
-				cur--
-			}
-		case ev.Key == KeyArrowRight:
-			cur = min(cur+1, len(out))
-		case ev.Key == KeyArrowUp:
-			goLineUp()
-		case ev.Key == KeyArrowDown:
-			goLineDown()
-		}
-	}
-
 	return out
 }
 
 func min(a, b int) int {
 	if a > b {
+		a = b
+	}
+	return a
+}
+func max(a, b int) int {
+	if a < b {
 		a = b
 	}
 	return a

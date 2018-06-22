@@ -31,7 +31,7 @@ func Test(t *testing.T) {
 	f("b\nac↑f", "bf\nac", "going up to shorter line")
 	f("ab\nabcde↑f", "abf\nabcde", "going up to shorter line")
 	f("\nb↑d", "d\nb", "starting with newline")
-	//~ f("ab\n\nc↑↑d", "adb\n\nc", "going up to preffered column instead of shortest one along the way")
+	f("ab\n\nc↑↑d", "adb\n\nc", "going up to preffered column instead of shortest one along the way")
 }
 
 func TestFuzz(t *testing.T) {
