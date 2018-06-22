@@ -8,23 +8,23 @@ type Event struct {
 }
 
 func Process(evs []Event) string {
-	var out string
+	var txt string
 	var cur int
 
 	var prev_was_updown bool    // was prev key up or down arrow?
 	var pref_col, pref_line int // preffered cur pos after sequence of up and down arrows
 
-	// insert next key as out[cur]; cur++
+	// insert next key as txt[cur]; cur++
 	put := func(ch rune) {
-		out = out[:cur] + string(ch) + out[cur:]
+		txt = txt[:cur] + string(ch) + txt[cur:]
 		cur++
 	}
 
 	for _, ev := range evs {
 		if ev.Key == KeyArrowUp || ev.Key == KeyArrowDown {
 			if !prev_was_updown {
-				pref_line = strings.Count(out[:cur], "\n")
-				line_beg := 1 + strings.LastIndex(out[:cur], "\n")
+				pref_line = strings.Count(txt[:cur], "\n")
+				line_beg := 1 + strings.LastIndex(txt[:cur], "\n")
 				pref_col = cur - line_beg
 			}
 
@@ -41,9 +41,9 @@ func Process(evs []Event) string {
 
 				// go to pref line
 				for p := 0; p < pref_line; p++ {
-					jump := strings.Index(out[cur:], "\n") + 1
+					jump := strings.Index(txt[cur:], "\n") + 1
 					if jump == 0 {
-						cur = len(out)
+						cur = len(txt)
 						break
 					}
 					cur += jump
@@ -51,7 +51,7 @@ func Process(evs []Event) string {
 
 				// go to pref col
 				if pref_line >= 0 {
-					for p := 0; cur < len(out) && p < pref_col && out[cur] != '\n'; p++ {
+					for p := 0; cur < len(txt) && p < pref_col && txt[cur] != '\n'; p++ {
 						cur++
 					}
 				}
@@ -65,12 +65,12 @@ func Process(evs []Event) string {
 			case ev.Key == KeyArrowLeft:
 				cur = max(cur-1, 0)
 			case ev.Key == KeyArrowRight:
-				cur = min(cur+1, len(out))
+				cur = min(cur+1, len(txt))
 			}
 		}
 	}
 
-	return out
+	return txt
 }
 
 func min(a, b int) int {
